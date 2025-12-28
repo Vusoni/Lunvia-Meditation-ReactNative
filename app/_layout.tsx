@@ -1,5 +1,37 @@
+import { ClerkProvider, tokenCache } from "@clerk/clerk-expo";
 import { Stack } from "expo-router";
+import React from "react";
 
-export default function RootLayout() {
-  return <Stack />;
+
+function RootLayoutWithAuth() {
+  const { isSignedIn, isLoaded } = useAuth()
+
+
+  if(!isLoaded) {
+    // Loading
+    return null
+  }
+
+
+  return (
+    <Stack>
+      <Stack.Protected guard={isSignedIn} >
+        <Stack.screen name="(protected)" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!isSignedIn}>
+        <Stack.screen name="(public)" />
+      </Stack.Protected>
+    </Stack>
+  )
 }
+
+
+export default function RootLayout() {  
+  return (
+  <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHIBLE_KEY}>
+    <RootLayoutWithAuth />
+  </ClerkProvider>
+  );
+}
+
