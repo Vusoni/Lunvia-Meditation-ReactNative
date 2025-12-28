@@ -1,5 +1,5 @@
-import React from "react";
 import { Text, View } from "react-native";
+import { SignOutButton } from "../../components/clerk/SignOutButton";
 
 export default function Index() {
   return (
@@ -11,6 +11,7 @@ export default function Index() {
       }}
     >
       <Text>Lunvia</Text>
+      <SignOutButton />
     </View>
   );
 }
