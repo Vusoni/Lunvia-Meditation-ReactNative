@@ -34,12 +34,16 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "microphonePermissions": "Allow $(PRODUCT_NAME) to access your microphone for AI voice conversations."
+        }
+      ],
+      ["@livekit/react-native-expo-plugin"]
     ],
     "experiments": {
       "typedRoutes": true,
