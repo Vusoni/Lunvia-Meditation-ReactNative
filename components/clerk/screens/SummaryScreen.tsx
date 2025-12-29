@@ -1,6 +1,10 @@
+import { useUser } from "@clerk/clerk-expo"
+import { useRouter } from "@elevenlabs/react-native"
 import { useLocalSearchParams } from "expo-router"
 import { useEffect, useState } from "react"
 import { ScrollView, StyleSheet, View } from "react-native"
+import { ID } from "react-native-appwrite"
+import { appwriteConfig, database } from "../../../utils/appwrite"
 import { ConversationResponse } from "../../../utils/types"
 import Button from "../Button"
 import { Gradient } from "../gradient"
@@ -10,11 +14,17 @@ export default function SummaryScreen() {
     // Using aparams get conversation id
     const { conversationId } = useLocalSearchParams()
     const [conversation, setConversation] = useState<ConversationResponse>();
+    const [isSaving, setIsSaving] = useState(false) // Loading state
 
     // Router
     const router = useRouter()
+
+    // Clerk for user
+    const {user} = useUser()
+
     
 
+    // useEffect for mounting
     useEffect(() => {
         getSummary()
     }, [])
@@ -22,11 +32,44 @@ export default function SummaryScreen() {
 
     // Get Summary function
     async function getSummary() {
-        const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/conversations?conversationId=${conversationId}`      
-    );
-    const data: {conversation: ConversationResponse } = await response.json();
-    setConversation(data.conversation)
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/conversations?conversationId=${conversationId}`      
+        );
+        const data: {conversation: ConversationResponse } = await response.json();
+        setConversation(data.conversation)
     }
+
+
+    // Function for saving and continue
+    async function saveAndContinue() {
+      try {
+
+        // Loading state
+        setIsSaving(true)
+
+          await database.createDocument(appwriteConfig.db,
+          appwriteConfig.tables.session,
+          ID.unique(), // Ensure that id is unique
+          {
+              user_id: user?.id,
+              status: conversation?.status,
+              conv_id: conversationId,
+              tokens: Number(conversation?.metadata?.cost),
+              call_duration_secs: Number(
+                  conversation?.metadata?.call_duration_secs
+              ),
+              transcript: conversation?.transcript.map((t) => t.message).join("\n"),
+              call_summary_title: conversation?.analysis?.call_summary_title,
+          }
+      );
+
+      // Dismiss All
+      router.dismissAll()
+      } catch(e) {
+          console.log(e)
+      } finally {
+        setIsSaving(false) // reset loading state
+      }
+  }
 
 
     //TODO: User Interface
@@ -87,8 +130,8 @@ export default function SummaryScreen() {
                         )}
 
                         <View style={{ alignItems: "center" }}>
-                        <Button onPress={() => router.dismissAll()}>
-                            Save and continue
+                        <Button onPress={saveAndContinue}>
+                            {isSaving ? "Saving..." : "Save and continue"}
                         </Button>
                     </View>
                 </ScrollView>
