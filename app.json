@@ -23,7 +23,8 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "bundler": "metro",
+      "output": "servevr",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
